@@ -1,0 +1,75 @@
+#include <msp430g2553.h>
+#define Button BIT3
+#define LED1 BIT0
+#define LED2 BIT6
+#define SET_BIT(x, y) ((x) = (x) | ((0)<<(y)))
+#define SET(x, y) ((x) = (x) | ((1)<<(y)))
+
+#define CLEAR(x, y) ((x) &= ~(1<<y))
+/*
+ * main.c
+ */
+
+void ConfigWDT(void);
+void ConfigClocks(void);
+void ConfigLEDs(void);
+void ConfigTimerA(void);
+void reset();
+
+int main(void) {
+
+
+	P1OUT = 0 | Button;
+	P1DIR = LED2;
+	P1REN = P1OUT;
+	ConfigWDT();
+	ConfigClocks();
+	ConfigTimerA();
+	_enable_interrupt();
+    for (;;) {
+    	if ((P1IN & BIT3) == 0) {
+
+    		P1OUT |= LED2;
+    		reset();
+            while ((P1IN & BIT3) == 0) {
+            }
+            P1OUT ^= LED2;
+            reset();
+            ConfigTimerA();
+    	}
+
+    }
+
+}
+
+void ConfigWDT() {
+	WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
+}
+
+void ConfigClocks(void) {
+    BCSCTL1 = CALBC1_1MHZ;
+    DCOCTL = CALDCO_1MHZ;
+    BCSCTL2 |=  DIVS_3;
+    SET_BIT(BCSCTL2, 3);
+}
+
+void ConfigTimerA() {
+	TACCR0 = 62499;
+	TACTL = MC_3 | TASSEL_2;
+    TACCTL0 = CCIE;
+}
+
+void ConfigLEDs(void) {
+	P1OUT ^= LED2;
+}
+
+void reset() {
+	 TACTL = TASSEL0 + TACLR;
+	 TACTL &= ~TAIFG;
+}
+
+#pragma vector = TIMER0_A0_VECTOR
+__interrupt void TIMER0_A0_ISR (void){
+    ConfigLEDs();
+    TACTL &= ~TAIFG;
+}

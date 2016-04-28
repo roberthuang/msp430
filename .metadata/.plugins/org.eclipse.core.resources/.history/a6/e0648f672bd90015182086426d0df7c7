@@ -1,0 +1,18 @@
+#include <msp430g2553.h>
+#define LED_RED BIT0
+/*
+ * main.c
+ */
+int main(void) {
+    WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
+    P1OUT = BIT3;
+    P1DIR = LED_RED;
+    P1REN = P1OUT;
+    for (;;) {
+    	while (P1IN & BIT3 != 0) {
+    		P1OUT = LED_RED;
+    	}
+    	P1OUT ^= LED_RED;
+    }
+	return 0;
+}

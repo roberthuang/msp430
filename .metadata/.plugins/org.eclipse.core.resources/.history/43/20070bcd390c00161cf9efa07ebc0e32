@@ -1,0 +1,28 @@
+#include <msp430g2553.h>
+long ADCDATA;
+long tempInDeg;
+/*
+ * main.c
+ */
+int main(void) {
+    WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
+	ADC10CTL0 = ADC10SHT_3 + ADC10ON + ADC10IE + REFON + SREF_1;
+    ADC10CTL1= INCH_10 + ADC10DIV_3;
+    P1DIR |= BIT0 + BIT6;
+    P1OUT = BIT0;
+
+    for (;;) {
+       ADC10CTL0 |= ENC + ADC10SC;
+
+       ADCDATA = ADC10MEM;
+
+       if (tempInDeg > 33) {
+    	   P1OUT |= BIT6;
+       } else {
+    	   P1OUT &= ~BIT6;
+       }
+
+    }
+}
+
+

@@ -1,0 +1,72 @@
+#include <msp430g2553.h>
+//RED
+#define LED1 BIT0
+//GREEN
+#define LED2 BIT6
+#define Button BIT3
+#define SET_BIT(x, y) ((x) = (x) | ((0)<<(y)))
+int count = 0;
+void change_green() {
+	TACTL &= ~TAIFG;
+	P1OUT ^= LED2;
+}
+
+void change_red() {
+	TACTL &= ~TAIFG;
+	P1OUT ^= LED1;
+}
+void set_green() {
+	//SET CLOCK
+	BCSCTL1 = CALBC1_1MHZ;
+	DCOCTL = CALDCO_1MHZ;
+	BCSCTL2 |=  DIVS_3;
+	SET_BIT(BCSCTL2, 3);
+
+	//SET TIMER_A
+	TACCR0 = 62499;
+	TACTL = MC_3 | TASSEL_2;
+}
+
+
+void reset() {
+	 TACTL = TASSEL0 + TACLR;
+}
+
+void main(void) {
+    WDTCTL = WDTPW + WDTHOLD;
+    P1OUT = 0 | Button;
+    P1DIR = LED1 + LED2;
+    P1REN = P1OUT;
+
+    set_green();
+    if ( CALBC1_1MHZ == 0xFF || CALDCO_1MHZ == 0xFF ) while (1);
+
+    for (;;) {
+    	if (TACTL & TAIFG) {
+    		change_green();
+    	}
+    	if ((P1IN & BIT3) == 0) {
+    		reset();
+    		set_green();
+    		P1OUT = LED2;
+    	    if (TACTL & TAIFG) {
+    	    	TACTL &= ~TAIFG;
+    	    }
+    	    if (TACTL & TAIFG) {
+    	       	TACTL &= ~TAIFG;
+    	    }
+    	    P1OUT ^= LED2;
+    	    reset();
+    	    set_green();
+    	    if (TACTL & TAIFG) {
+    	        change_green();
+    	    }
+    	    while ((P1IN & BIT3) == 0) {
+    	    	if (TACTL & TAIFG) {
+    	    	     change_green();
+    	    	}
+    	    }
+    	}
+    }
+
+} // main

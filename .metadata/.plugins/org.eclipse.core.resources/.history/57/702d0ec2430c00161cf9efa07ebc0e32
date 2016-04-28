@@ -1,0 +1,17 @@
+#include <msp430g2553.h>
+
+/*
+ * main.c
+ */
+int main(void) {
+    WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
+    ADC10CTL1 = SHS_1 + CONSEQ_2 + INCH_1;
+    ADC10CTL0 = SREF_1 + ADC10SHT_2 + REFON + ADC10ON + ADC10IE;                  ADC10ON + ADC10IE;
+    __enable_interrupt();
+
+	for(;;) {
+
+
+	}
+	return 0;
+}

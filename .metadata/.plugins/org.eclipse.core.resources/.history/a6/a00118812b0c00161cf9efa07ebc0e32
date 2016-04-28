@@ -1,0 +1,30 @@
+#include <msp430g2553.h>
+
+/*
+ * main.c
+ */
+int main(void) {
+    WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
+	ADC10CTL0 = ADC10SHT_2 + ADC10ON + ADC10IE;
+    ADC10CTL1= INCH_1;
+    ADC10AE0 = 0X02
+    P1DIR |= BIT0;
+
+    for (;;) {
+
+       ADC10CTL0 |= ENC + ADC10SC;
+       __bis_SR_register(CPUOFF + GIE);//Sleep and Enable Interrupt
+       if (ADC10MEM < 0X1FF) {
+    	   P1OUT &= ~BIT0;
+       } else {
+    	   P1OUT ^= BIT0;
+       }
+    }
+}
+//Interrupt進來,就離開Sleep
+#pragma vector=ADC10_VECTOR
+__interrupt void ADC10_ISR(void) {
+    __bic_SR_register_on_exit(CPUOFF);
+
+}
+
